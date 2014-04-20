@@ -1,0 +1,119 @@
+#ifndef JRUN_PARSER_HPP
+#define JRUN_PARSER_HPP
+
+#include <vector>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/qi_auto.hpp>
+#include <boost/spirit/include/lex_lexertl.hpp>
+#include <boost/spirit/include/phoenix.hpp>
+
+#include "generation.hpp"
+#include "log/logger.hpp"
+
+namespace jrun {
+  namespace parser{   
+    namespace qi = boost::spirit::qi;
+    namespace phoenix = boost::phoenix;
+    namespace ascii = boost::spirit::ascii;
+    namespace data = jrun::generation;
+
+    bool debug_printer(const char *msg){
+#ifdef DEBUG
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string(msg) );
+#endif      
+	return true;
+    }
+    
+    template<typename T>
+    struct mXml_grammer : qi::grammar<T, data::AST(), ascii::space_type >
+    {
+    mXml_grammer();
+    //typedef typename LexerType::iterator_type T;   
+#define ruleDefine(name, type) qi::rule<T, type(), ascii::space_type > name
+
+    ruleDefine(start, data::AST);	ruleDefine(charRule, std::string);
+    ruleDefine(literRule, data::literValue);	ruleDefine(symName, std::string);
+    ruleDefine(nameRule, data::names);		
+    ruleDefine(mapkeyRule, data::mapKey);	ruleDefine(mapConstRule, data::mapConst);
+    ruleDefine(leftVRule, data::leftValue);	ruleDefine(rightVRule, data::rightValue);
+    ruleDefine(funcRule, data::funCall);	ruleDefine(AFuncRule, data::AnnoFunc);	ruleDefine(NFuncRule, data::NamedFunc);
+    ruleDefine(sOpRule, data::sOpValue);	ruleDefine(dOpRule, data::dOpValue);
+    ruleDefine(tVRule, data::tValue);
+    ruleDefine(objectRule, data::Objectdef);	ruleDefine(propertyAssignRule, data::propertyAssign);
+    ruleDefine(retRule, data::retCommand);
+    ruleDefine(vargsRule, data::virtualArgs);	ruleDefine(rargsRule, data::RealArgs);
+    ruleDefine(commandRule, data::mCommand);	ruleDefine(exprRule, data::Expr);	ruleDefine(assignRule, data::Assign);
+#undef ruleDefine
+    void report (const char * a) { std::cout << a; };
+    };
+    
+    template<typename T>
+    mXml_grammer<T> :: mXml_grammer() : mXml_grammer::base_type(start)
+    {
+      using namespace qi;	using namespace phoenix;	using namespace jrun::log;
+      
+      const char opBrace = '{', clBrace = '}', opBracket = '[', clBracket = ']', opParen = '(', clParen = ')';
+      const char comma = ',', dot = '.', semicolon = ';', colon = ':', equal = '=';
+      
+      symName %= ascii::alpha >> *(ascii::alnum | '_');	symName.name("symNameRule");
+      literRule %= ascii::string("undefined") | ascii::string("null") | ascii::string("true") | ascii::string("false") | (ascii::char_('"') >> *(ascii::char_ - '"') >> '"' ) | (+ascii::digit) ;
+      //literRule = omit[ ascii::char_("\"") ] >> *(ascii::char_ - ascii::char_("\"")) > ascii::char_("\"");
+      literRule.name("LiteralRule");
+      nameRule %= symName % dot;	nameRule.name("names");
+     
+      mapkeyRule %= nameRule >> opBracket >> nameRule >> clBracket;	mapkeyRule.name("mapKey");
+      mapConstRule %= nameRule >> opBracket >> literRule >> clBracket;	mapConstRule.name("mapConst");
+      leftVRule = mapkeyRule[_val = qi::_1] || mapConstRule[_val = qi::_1] || nameRule[_val = qi::_1];		
+      leftVRule.name("leftValue");
+      dOpRule %= tVRule >> ( ascii::char_('+')|ascii::char_('-')|ascii::char_('*')|ascii::char_('/') ) >> tVRule; 
+      dOpRule.name("dOp");
+      sOpRule %= tVRule >> (ascii::string("++")|ascii::string("--"));
+      sOpRule.name("sOp");
+      tVRule = funcRule[_val = qi::_1] || leftVRule[_val = qi::_1] || literRule[_val = qi::_1];
+      tVRule.name("tVRule");
+      objectRule %= opBrace >> *(propertyAssignRule >> qi::lit(semicolon)) >> clBrace;
+      objectRule.name("object");
+      rightVRule = AFuncRule[_val = qi::_1] || dOpRule[_val = qi::_1] || sOpRule[_val = qi::_1] || 
+		   funcRule[_val = qi::_1] || objectRule[_val = qi::_1]
+		    || leftVRule[_val = qi::_1] || literRule[_val = qi::_1];
+      rightVRule.name("rightValue");
+      vargsRule = -symName[push_back(_val, qi::_1)] >> *(comma >> symName[push_back(_val, qi::_1)]);
+      vargsRule.name("vargs");
+      //NFuncRule = qi::lit("function") >> symName[at_c<0>(_val)=qi::_1];
+      NFuncRule %=  qi::lit("function") >> symName
+		>> opParen >> vargsRule >> clParen
+		>> opBrace >> *(commandRule >> qi::lit(semicolon)) >> clBrace;
+      NFuncRule.name("NamedFunctionRule");
+      AFuncRule %= qi::lit("function")
+		>> opParen >> vargsRule >> clParen 
+		>> opBrace >> *(commandRule >> qi::lit(semicolon)) >> clBrace;
+      AFuncRule.name("AnnoymousFunctionRule");
+      rargsRule %= rightVRule % comma;
+      rargsRule.name("rargsRule");
+      funcRule %= leftVRule >> opParen >> rargsRule >> clParen;
+      funcRule.name("funCallRule");
+      exprRule = assignRule[_val = qi::_1] || rightVRule[_val = qi::_1];
+      exprRule.name("expr");
+      assignRule %= leftVRule >> equal >> rightVRule;
+      assignRule.name("AssignmentRule");
+      propertyAssignRule %= symName  >> colon >> rightVRule ;
+      propertyAssignRule.name("property");
+      retRule %= qi::lit("return") >> rightVRule ;
+      retRule.name("return");
+      commandRule = NFuncRule[_val = qi::_1] || retRule[_val = qi::_1] || exprRule[_val = qi::_1] ;
+      commandRule.name("command");
+      start = +(commandRule[push_back(at_c<0>(_val), qi::_1)] >> qi::lit(semicolon));
+      start.name("start");
+      /*
+      qi::debug(start);	qi::debug(commandRule);	qi::debug(retRule);	qi::debug(propertyAssignRule);
+      qi::debug(assignRule);	qi::debug(exprRule);	qi::debug(funcRule);	qi::debug(rargsRule);
+      qi::debug(AFuncRule);	qi::debug(NFuncRule);	qi::debug(vargsRule);	qi::debug(rightVRule);
+      qi::debug(objectRule);	qi::debug(sOpRule);	qi::debug(dOpRule);
+      qi::debug(leftVRule);	qi::debug(mapConstRule);qi::debug(mapkeyRule);	qi::debug(nameRule);
+      qi::debug(literRule);	qi::debug(symName);	qi::debug(tVRule);
+      */
+    }
+  }
+}
+
+#endif
