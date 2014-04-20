@@ -8,6 +8,8 @@
 #include <iostream>
 #include <memory>
 #include "log/logger.hpp"
+#include "vmachine/tag.hpp"
+#include "vmachine/closure.hpp"
 
 using namespace jrun::vmachine;
 
@@ -69,6 +71,18 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   fun->args = f.argsv;
   fun->operations = f.commands;
   fun->contexts = cxts;
+  
+  // check for posssible closure references
+  std::vector<JRunContextPtr> contexts;	//temeroray contexts
+  contexts.push_back(cxts.back());
+  JRunContextPtr c = JRunContext::instance();
+  int t = f.argsv.size();
+  for(int i = 0; i < t; ++i)
+  {
+    c->properties[f.argsv.at(i)] = nullObject;
+  }
+  contexts.push_back(c);			//AnnoFunc has args, so need to init current environments
+  jrun::vmachine::closure_ref_test(f.commands, contexts);
 
   return std::static_pointer_cast<JObject>(fun);
 }
@@ -155,7 +169,8 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   //closure deal
   for(jrun::vmachine::JRunContext::mapIterator it = cur->properties.begin(); it != cur->properties.end(); ++it)
   {
-    cur->properties.erase(it);	//清除所有当前变量
+    if( !( it->second->properties.count(jrun::vmachine::tag::REF_CLOSURE) > 0 ) )	//没有被闭包所引用
+      cur->properties.erase(it);	//清除所有当前变量
   }
   
   return re;

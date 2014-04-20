@@ -4,6 +4,7 @@ set(vmSRCS
   visitor.cc
   vmachine.cc
   JRunContext.cc
+  closure.cc
 )
 
 add_library(vmachine ${vmSRCS})
