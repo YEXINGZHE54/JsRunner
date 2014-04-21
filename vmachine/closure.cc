@@ -145,23 +145,24 @@ void closure_visitor::operator() ( const jrun::generation::mapConst& e ) const
 void closure_visitor::operator() ( const std::string& name ) const
 {
   if(name.empty() || name.at(0) == '"') return;
+  //first search in current, if it has appeared before, then it must have been placed in current environment
+  JRunContextPtr j = contexts.back();
+  if( j->properties.count(name) > 0) return;
+  j->properties[name] = nullObject;	//it appeared first time, put in in current, wherever should it be
+  
   int sizet = contexts.size();
-  for(int i = 1; i < sizet; ++i) //first one is parent
+  for(int i = sizet - 2; i >= 1; --i) //first one is parent, skip i = 0 , i = sizet-1
   {
-    JRunContextPtr j = contexts.at(i);
+    j = contexts.at(i);
     if(j->properties.count(name) > 0) return;
   }
-  JRunContextPtr j = contexts.front();
+  
+  j = contexts.front();			//now, deal with parent referred var
   if(j->properties.count(name) > 0)
   {
     JObjectPtr o = j->properties[name];
     o->properties[tag::REF_CLOSURE] = nullObject;	//mark it in parent environment as refered by closure
     return;
-  }
-  else	//set it in currently closest environment
-  {
-    j = contexts.back();
-    j->properties[name] = nullObject;
   }
 }
 
