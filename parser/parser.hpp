@@ -88,7 +88,8 @@ namespace jrun {
 		>> opParen >> vargsRule >> clParen 
 		>> opBrace >> *(commandRule >> qi::lit(semicolon)) >> clBrace;
       AFuncRule.name("AnnoymousFunctionRule");
-      rargsRule %= rightVRule % comma;
+      //rargsRule %= rightVRule % comma;
+      rargsRule = -rightVRule[push_back(_val, qi::_1)] >> *(comma >> rightVRule[push_back(_val, qi::_1)]);
       rargsRule.name("rargsRule");
       funcRule %= leftVRule >> opParen >> rargsRule >> clParen;
       funcRule.name("funCallRule");
