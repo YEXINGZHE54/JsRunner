@@ -47,7 +47,8 @@ out:
 
 JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::retCommand& ret)
 {
-  return boost::apply_visitor(right_command_visitor(cxts), ret.exr);
+  JObjectPtr ptr = boost::apply_visitor(right_command_visitor(cxts), ret.exr);
+  throw ReturnKit(ptr);		//we use throw try-catch to jump out of deep stackFrames, maybe it is the only way to do it
 }
 
 JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::ifCommand& r)
@@ -197,7 +198,12 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   scopeChain.push_back(cur);
   
   //run it!
-  JObjectPtr re = VM::runCommands(scopeChain, fun->operations);
+  JObjectPtr re = nullObject;
+  try {
+    VM::runCommands(scopeChain, fun->operations);
+  } catch (ReturnKit r) {
+    re = r.result;
+  }
   
   //closure deal
   for(jrun::vmachine::JRunContext::mapIterator it = cur->properties.begin(); it != cur->properties.end(); ++it)

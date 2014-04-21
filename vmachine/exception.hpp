@@ -2,6 +2,7 @@
 #define JRUN_VMACHINE_EXCEPTION_HPP
 
 #include <exception>
+#include "vmachine/JObject.hpp"
 
 namespace jrun{
   namespace vmachine{
@@ -43,6 +44,16 @@ namespace jrun{
       {
 	return "variable connot be calculated!";
       }
+    };
+    
+    class ReturnKit{
+    public:
+    ReturnKit(JObjectPtr ptr) : result(ptr){};
+    JObjectPtr result;
+    };
+    
+    class BreakKit{
+      
     };
   }
 }

@@ -14,7 +14,14 @@ void VM::execute(std::shared_ptr< jrun::generation::AST > commands)
 {
   std::vector<JRunContextPtr> cxts;
   cxts.push_back( JObject::instance() );
-  JObjectPtr r = runCommands(cxts, commands->commands);
+  JObjectPtr r = nullObject;
+  try{
+    r = runCommands(cxts, commands->commands);
+  } catch (std::exception& e) {
+      std::cerr << e.what() <<std::endl;
+  } catch(...) {
+      std::cerr << "Unsupported operation!" <<std::endl;
+  }
   
   JRunContextPtr cur = cxts.front();
   for(jrun::vmachine::JRunContext::mapIterator it = cur->properties.begin(); it != cur->properties.end(); ++it)
@@ -46,13 +53,7 @@ JObjectPtr VM::runCommands(const std::vector< JRunContextPtr >& scopeChain, cons
 #ifdef DEBUG
     jrun::log::Logger::log(jrun::log::level::INFO, std::string("running a command in vmachine!") );
 #endif
-    try{
-      result = boost::apply_visitor(command_visitor(scopeChain), (*it));
-    } catch (std::exception& e) {
-      std::cerr << e.what() <<std::endl;
-      result = nullObject;
-      break;
-    }
+    result = boost::apply_visitor(command_visitor(scopeChain), (*it));
   };
   return result;
 }
