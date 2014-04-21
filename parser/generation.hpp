@@ -64,8 +64,9 @@ namespace jrun{
       rightValue exr;
     };
     
+    struct ifCommand;
     typedef boost::variant<
-      boost::recursive_wrapper<NamedFunc>, retCommand, Expr
+      boost::recursive_wrapper<NamedFunc>, retCommand, boost::recursive_wrapper<ifCommand>, Expr
     > mCommand;
     struct propertyAssign {
       std::string key;
@@ -82,6 +83,11 @@ namespace jrun{
       virtualArgs argsv;
       std::vector<mCommand> commands;
     };       
+    struct ifCommand {
+      Expr e;
+      std::vector<mCommand> commands;
+      std::vector<mCommand> elsecoms;
+    };
     
     struct AST {
       std::vector<mCommand> commands;

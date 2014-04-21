@@ -28,6 +28,29 @@ JObject::~JObject()
 #endif
 }
 
+bool JObject::isTrue()
+{
+  if( this == nullObject.get() ) return false;	//null object
+  JObjectPtr self = this->share();
+  JLiterObjectPtr l1 = std::dynamic_pointer_cast<JLiterObject>(self);
+  if( !l1.get() ) return true;			//not literal
+  std::string v = l1->value; 
+  if( v.at(0) == '"' ){
+    if(v.size() == 1) 	return false;			//empty string
+    else		return true;
+  } else {
+    //ascii::string("undefined") | ascii::string("null") | ascii::string("true") | ascii::string("false");
+    auto strCom = [ &v ](const std::string& str) -> bool { return v.compare(0, std::string::npos, str) == 0; };
+    if(strCom("undefined"))	return false;
+    if(strCom("null"))	return false;
+    if(strCom("false"))	return false;
+    if(strCom("true"))	return true;
+    long double n1 = std::stold(v);
+    if(n1 == 0.0) 	return false;			//number 0 is false
+    else 		return true;			//else number is true
+  }
+}
+
 JObjectPtr JObject::instance()
 {
   return std::shared_ptr<JObject>(new JObject());

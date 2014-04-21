@@ -26,13 +26,43 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   fun->args = f.argsv;
   fun->operations = f.commands;
   fun->contexts = cxts;
-  //cur->properties.insert( std::pair<propertyName, propertyValue>(f.name, fun) );
+  
+  // check for posssible closure references
+  if(cxts.size() == 1) goto out;		//if in global envrionment, no check
+  {
+  std::vector<JRunContextPtr> contexts;	//temeroray contexts
+  contexts.push_back(cxts.back());
+  JRunContextPtr c = JRunContext::instance();
+  int t = f.argsv.size();
+  for(int i = 0; i < t; ++i)
+  {
+    c->properties[f.argsv.at(i)] = nullObject;
+  }
+  contexts.push_back(c);			//AnnoFunc has args, so need to init current environments
+  jrun::vmachine::closure_ref_test(f.commands, contexts);
+  }
+out:  
   return nullObject;
 }
 
 JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::retCommand& ret)
 {
   return boost::apply_visitor(right_command_visitor(cxts), ret.exr);
+}
+
+JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::ifCommand& r)
+{
+#ifdef DEBUG
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string("if command blocks in operation  ") );
+#endif
+  JObjectPtr condition = boost::apply_visitor(expr_command_visitor(cxts) , r.e);
+  JObjectPtr result = nullObject;
+  if(condition->isTrue()) {
+    result = VM::runCommands(cxts, r.commands);
+  } else {
+    result = VM::runCommands(cxts, r.elsecoms);
+  }
+  return result;
 }
 
 JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::Assign& ass)
@@ -73,6 +103,8 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   fun->contexts = cxts;
   
   // check for posssible closure references
+  if(cxts.size() == 1) goto out;
+  {
   std::vector<JRunContextPtr> contexts;	//temeroray contexts
   contexts.push_back(cxts.back());
   JRunContextPtr c = JRunContext::instance();
@@ -83,7 +115,8 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   }
   contexts.push_back(c);			//AnnoFunc has args, so need to init current environments
   jrun::vmachine::closure_ref_test(f.commands, contexts);
-
+  }
+out:
   return std::static_pointer_cast<JObject>(fun);
 }
 

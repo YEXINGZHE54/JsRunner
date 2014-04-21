@@ -43,6 +43,7 @@ namespace jrun {
     ruleDefine(retRule, data::retCommand);
     ruleDefine(vargsRule, data::virtualArgs);	ruleDefine(rargsRule, data::RealArgs);
     ruleDefine(commandRule, data::mCommand);	ruleDefine(exprRule, data::Expr);	ruleDefine(assignRule, data::Assign);
+    ruleDefine(ifRule, data::ifCommand);
 #undef ruleDefine
     void report (const char * a) { std::cout << a; };
     };
@@ -101,8 +102,17 @@ namespace jrun {
       propertyAssignRule.name("property");
       retRule %= qi::lit("return") >> rightVRule ;
       retRule.name("return");
-      commandRule = NFuncRule[_val = qi::_1] || retRule[_val = qi::_1] || exprRule[_val = qi::_1] ;
+      commandRule = NFuncRule[_val = qi::_1] || retRule[_val = qi::_1] || ifRule[_val = qi::_1] || exprRule[_val = qi::_1] ;
       commandRule.name("command");
+      ifRule = qi::lit("if")
+		>> opParen >> exprRule[at_c<0>(_val) = qi::_1] >> clParen 
+		>>( (opBrace >> *(commandRule[push_back(at_c<1>(_val), qi::_1)] >> qi::lit(semicolon)) >> clBrace)
+		| (commandRule[push_back(at_c<1>(_val), qi::_1)] >> qi::lit(semicolon)) )
+		>> qi::lit("else")
+		>>( (opBrace >> *(commandRule[push_back(at_c<2>(_val), qi::_1)] >> qi::lit(semicolon)) >> clBrace)
+		| ( commandRule[push_back(at_c<2>(_val), qi::_1)] ) );
+		;
+      ifRule.name("ifRule");
       start = +(commandRule[push_back(at_c<0>(_val), qi::_1)] >> qi::lit(semicolon));
       start.name("start");
       /*
@@ -111,7 +121,7 @@ namespace jrun {
       qi::debug(AFuncRule);	qi::debug(NFuncRule);	qi::debug(vargsRule);	qi::debug(rightVRule);
       qi::debug(objectRule);	qi::debug(sOpRule);	qi::debug(dOpRule);
       qi::debug(leftVRule);	qi::debug(mapConstRule);qi::debug(mapkeyRule);	qi::debug(nameRule);
-      qi::debug(literRule);	qi::debug(symName);	qi::debug(tVRule);
+      qi::debug(literRule);	qi::debug(symName);	qi::debug(tVRule);	qi::debug(ifRule);
       */
     }
   }

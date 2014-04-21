@@ -24,6 +24,7 @@ namespace jrun{
       JObjectPtr operator- (JObjectPtr o1);
       JObjectPtr operator* (JObjectPtr o1);
       JObjectPtr operator/ (JObjectPtr o1);
+      bool isTrue();
       virtual void dummy();
     };
     

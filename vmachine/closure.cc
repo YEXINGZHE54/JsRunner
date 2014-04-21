@@ -4,6 +4,7 @@
 #include <boost/variant/apply_visitor.hpp>
 #include "parser/generation.hpp"
 #include "vmachine/JObject.hpp"
+#include "assert.h"
 
 namespace jrun{
   namespace vmachine {
@@ -22,7 +23,7 @@ namespace jrun{
       	void operator()(const gen::Objectdef&) const;
       	void operator()(const gen::AnnoFunc&) const;      
       	void operator()(const gen::leftValue&) const;
-      	//void operator()(const gen::literValue&) const;
+      	void operator()(const gen::ifCommand&) const;
       	void operator()(const gen::names&) const;
       	void operator()(const gen::mapKey&) const;
       	void operator()(const gen::mapConst&) const;
@@ -56,6 +57,13 @@ void closure_visitor::operator() ( const jrun::generation::NamedFunc& f ) const
 void closure_visitor::operator() ( const jrun::generation::retCommand& e) const
 {
   boost::apply_visitor(closure_visitor(contexts), e.exr);
+}
+
+void closure_visitor::operator()(const jrun::generation::ifCommand& r) const
+{
+  boost::apply_visitor(closure_visitor(contexts), r.e);
+  jrun::vmachine::closure_ref_test(r.commands, contexts);
+  jrun::vmachine::closure_ref_test(r.elsecoms, contexts);
 }
 
 void closure_visitor::operator() ( const jrun::generation::Assign& e) const
@@ -157,8 +165,15 @@ void closure_visitor::operator() ( const std::string& name ) const
   }
 }
 
+/*
+ * A Helper Function, maybe not effective
+ * To test whether variables in parent environment are referred by commands in Annonymous Function
+ * so, the front of vector is the parent, regardless of rest elements
+ * Note : we need to prepare arguments in current envrionment ourselves, not in helper function
+ */
 void jrun::vmachine::closure_ref_test (const std::vector< jrun::generation::mCommand >& commands,const std::vector<JRunContextPtr>& cxts )
 {  
+  assert( cxts.size() > 1 );
   for(std::vector<jrun::generation::mCommand>::const_iterator it = commands.begin(); it != commands.end(); ++it){
     boost::apply_visitor(closure_visitor(cxts), (*it));
   }

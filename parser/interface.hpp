@@ -84,6 +84,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
+      jrun::generation::ifCommand,
+      (jrun::generation::Expr, e)
+      (std::vector<jrun::generation::mCommand>, commands)
+      (std::vector<jrun::generation::mCommand>, elsecoms)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
   jrun::generation::AST,
   (std::vector<jrun::generation::mCommand>, commands)
 )

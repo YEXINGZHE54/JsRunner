@@ -15,6 +15,7 @@ namespace jrun {
 	JObjectPtr operator()(const gen::Expr&) const;
 	JObjectPtr operator()(const gen::NamedFunc&) const;
 	JObjectPtr operator()(const gen::retCommand&) const;	
+	JObjectPtr operator()(const gen::ifCommand& ) const;
     private:
 	const std::vector<JRunContextPtr>& contexts;
     };

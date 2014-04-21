@@ -49,6 +49,14 @@ JObjectPtr command_visitor::operator()(const jrun::generation::retCommand& com) 
   return Operation::exec(contexts, com);
 }
 
+JObjectPtr command_visitor::operator()(const jrun::generation::ifCommand& r) const
+{
+#ifdef DEBUG
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string("running a IF command in command visitor") );
+#endif
+  return Operation::exec(contexts, r);
+}
+
 JObjectPtr expr_command_visitor::operator()(const jrun::generation::Assign& ass) const
 {
 #ifdef DEBUG
