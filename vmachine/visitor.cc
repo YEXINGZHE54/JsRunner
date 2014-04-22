@@ -73,6 +73,14 @@ JObjectPtr expr_command_visitor::operator()(const jrun::generation::rightValue& 
   return boost::apply_visitor(right_command_visitor(contexts) , expr);
 }
 
+JObjectPtr expr_command_visitor::operator()(const jrun::generation::tValue& e) const
+{
+#ifdef DEBUG
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string("running a tValue in right visitor, it shoule follow dOpValue.") );
+#endif
+  return boost::apply_visitor(right_command_visitor(contexts) , e);
+}
+
 JObjectPtr right_command_visitor::operator()(const jrun::generation::AnnoFunc& anF) const
 {
 #ifdef DEBUG

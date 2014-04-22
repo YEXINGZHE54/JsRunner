@@ -36,9 +36,9 @@ namespace jrun {
     ruleDefine(nameRule, data::names);		
     ruleDefine(mapkeyRule, data::mapKey);	ruleDefine(mapConstRule, data::mapConst);
     ruleDefine(leftVRule, data::leftValue);	ruleDefine(rightVRule, data::rightValue);
-    ruleDefine(funcRule, data::funCall);	ruleDefine(AFuncRule, data::AnnoFunc);	ruleDefine(NFuncRule, data::NamedFunc);
+    ruleDefine(funcRule, data::funCall);	ruleDefine(AFuncRule, data::AnnoFunc);		ruleDefine(NFuncRule, data::NamedFunc);
     ruleDefine(sOpRule, data::sOpValue);	ruleDefine(dOpRule, data::dOpValue);
-    ruleDefine(tVRule, data::tValue);
+    ruleDefine(tVRule, data::tValue);		ruleDefine(wrapRightVRule, data::wrappedRightValue);
     ruleDefine(objectRule, data::Objectdef);	ruleDefine(propertyAssignRule, data::propertyAssign);
     ruleDefine(retRule, data::retCommand);
     ruleDefine(vargsRule, data::virtualArgs);	ruleDefine(rargsRule, data::RealArgs);
@@ -66,7 +66,10 @@ namespace jrun {
       mapConstRule %= nameRule >> opBracket >> literRule >> clBracket;	mapConstRule.name("mapConst");
       leftVRule = mapkeyRule[_val = qi::_1] || mapConstRule[_val = qi::_1] || nameRule[_val = qi::_1];		
       leftVRule.name("leftValue");
-      dOpRule %= tVRule >> ( ascii::char_('+')|ascii::char_('-')|ascii::char_('*')|ascii::char_('/') ) >> rightVRule; 
+      //to avoid circulation between dOpvalue and rightValue, by '('
+      wrapRightVRule = ( '(' >> rightVRule[_val = qi::_1] >> ')' ) || tVRule[_val = qi::_1];
+      wrapRightVRule.name("wrappedRightValue");
+      dOpRule %= wrapRightVRule >> ( ascii::char_('+')|ascii::char_('-')|ascii::char_('*')|ascii::char_('/') ) >> ( rightVRule | '(' >> rightVRule >> ')' ); 
       dOpRule.name("dOp");
       sOpRule %= tVRule >> (ascii::string("++")|ascii::string("--"));
       sOpRule.name("sOp");

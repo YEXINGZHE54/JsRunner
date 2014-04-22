@@ -128,7 +128,7 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
 #endif
   assert(!cxts.empty());
 
-  JObjectPtr v1 = boost::apply_visitor(right_command_visitor(cxts), dOp.first);
+  JObjectPtr v1 = boost::apply_visitor(expr_command_visitor(cxts), dOp.first);
   JObjectPtr v2 = boost::apply_visitor(right_command_visitor(cxts), dOp.second);
   assert(!dOp.op.empty());
   char c = dOp.op.at(0);

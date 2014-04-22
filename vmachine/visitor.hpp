@@ -32,6 +32,7 @@ namespace jrun {
       expr_command_visitor(const std::vector<JRunContextPtr>&);
       JObjectPtr operator()(const gen::Assign&) const;
       JObjectPtr operator()(const gen::rightValue&) const;
+      JObjectPtr operator()(const gen::tValue&) const;
     private:
 	const std::vector<JRunContextPtr>& contexts;
     };
@@ -45,7 +46,7 @@ namespace jrun {
       JObjectPtr operator()(const gen::Objectdef&) const;
       JObjectPtr operator()(const gen::AnnoFunc&) const;      
       JObjectPtr operator()(const gen::leftValue&) const;
-      JObjectPtr operator()(const gen::literValue&) const;
+      JObjectPtr operator()(const gen::literValue&) const;      
     private:
 	const std::vector<JRunContextPtr>& contexts;
     };

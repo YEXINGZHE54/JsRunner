@@ -31,7 +31,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
   jrun::generation::dOpValue,
-  (jrun::generation::tValue, first)
+  (jrun::generation::wrappedRightValue, first)
   (std::string, op)
   (jrun::generation::rightValue, second)  
 )

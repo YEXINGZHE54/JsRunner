@@ -17,6 +17,7 @@ namespace jrun{
 	void operator()(const gen::retCommand&) const;	
 	void operator()(const gen::Assign&) const;
 	void operator()(const gen::rightValue&) const;
+	void operator()(const gen::tValue&) const;
 	void operator()(const gen::dOpValue&) const;
 	void operator()(const gen::sOpValue&) const;
 	void operator()(const gen::funCall&) const;
@@ -73,6 +74,11 @@ void closure_visitor::operator() ( const jrun::generation::Assign& e) const
 }
 
 void closure_visitor::operator() ( const jrun::generation::rightValue& e) const
+{
+  boost::apply_visitor(closure_visitor(contexts), e);
+}
+
+void closure_visitor::operator()(const jrun::generation::tValue& e) const
 {
   boost::apply_visitor(closure_visitor(contexts), e);
 }

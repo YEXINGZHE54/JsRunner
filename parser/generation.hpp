@@ -39,8 +39,11 @@ namespace jrun{
      boost::recursive_wrapper<funCall>,
      leftValue, literValue 
     > tValue;
+    typedef boost::variant<
+      tValue, rightValue
+    > wrappedRightValue;
     struct dOpValue { //exclude =
-      tValue first;  std::string op;	rightValue second;
+      wrappedRightValue first;  std::string op;	rightValue second;
     };
     struct sOpValue {
       tValue first; std::string op;
