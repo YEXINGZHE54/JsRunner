@@ -40,7 +40,7 @@ namespace jrun{
      leftValue, literValue 
     > tValue;
     struct dOpValue { //exclude =
-      tValue first;  std::string op;	tValue second;
+      tValue first;  std::string op;	rightValue second;
     };
     struct sOpValue {
       tValue first; std::string op;

@@ -66,7 +66,7 @@ namespace jrun {
       mapConstRule %= nameRule >> opBracket >> literRule >> clBracket;	mapConstRule.name("mapConst");
       leftVRule = mapkeyRule[_val = qi::_1] || mapConstRule[_val = qi::_1] || nameRule[_val = qi::_1];		
       leftVRule.name("leftValue");
-      dOpRule %= tVRule >> ( ascii::char_('+')|ascii::char_('-')|ascii::char_('*')|ascii::char_('/') ) >> tVRule; 
+      dOpRule %= tVRule >> ( ascii::char_('+')|ascii::char_('-')|ascii::char_('*')|ascii::char_('/') ) >> rightVRule; 
       dOpRule.name("dOp");
       sOpRule %= tVRule >> (ascii::string("++")|ascii::string("--"));
       sOpRule.name("sOp");
