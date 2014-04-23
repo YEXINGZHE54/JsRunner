@@ -76,16 +76,10 @@ JLiterObjectPtr JLiterObject::instance()
   return std::shared_ptr<JLiterObject>(new JLiterObject());
 }
 
-JObjectPtr JObject::operator*(JObjectPtr o1)
+JLiterObjectPtr JLiterObject::operator*(JLiterObjectPtr o1)
 {
-  JLiterObjectPtr l1 = std::dynamic_pointer_cast<JLiterObject>(o1);
-  JObjectPtr self = this->share();
-  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(self);
-  if(! ( l1.get() && l.get() ) )
-  {
-    throw CalculatorException();
-  }
-  std::string v = l->value;	std::string v1 = l1->value;
+  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(share());
+  std::string v = l->value;	std::string v1 = o1->value;
   JLiterObjectPtr o = JLiterObject::instance();
   if( (v.at(0) != '"') && (v1.at(0) != '"') )
   {
@@ -96,18 +90,12 @@ JObjectPtr JObject::operator*(JObjectPtr o1)
   } else {
     throw CalculatorException();
   }
-  return std::static_pointer_cast<JObject>(o);
+  return o;
 }
 
-JObjectPtr JObject::operator+(JObjectPtr o1)
+JLiterObjectPtr JLiterObject::operator+(JLiterObjectPtr l1)
 {
-  JLiterObjectPtr l1 = std::dynamic_pointer_cast<JLiterObject>(o1);
-  JObjectPtr self = this->share();
-  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(self);
-  if(! ( l1.get() && l.get() ) )
-  {
-    throw CalculatorException();
-  }
+  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(share());
   std::string v = l->value;	std::string v1 = l1->value;
   JLiterObjectPtr o = JLiterObject::instance();
   if( (v.at(0) != '"') && (v1.at(0) != '"') )
@@ -121,17 +109,11 @@ JObjectPtr JObject::operator+(JObjectPtr o1)
     re.insert(re.end(), v1.begin() + 1, v1.end());
     o->value = re;
   };
-  return std::static_pointer_cast<JObject>(o);
+  return o;
 }
-JObjectPtr JObject::operator-(JObjectPtr o1)
+JLiterObjectPtr JLiterObject::operator-(JLiterObjectPtr l1)
 {
-  JLiterObjectPtr l1 = std::dynamic_pointer_cast<JLiterObject>(o1);
-  JObjectPtr self = this->share();
-  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(self);
-  if(! ( l1.get() && l.get() ) )
-  {
-    throw CalculatorException();
-  }
+  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(share());
   std::string v = l->value;	std::string v1 = l1->value;
   JLiterObjectPtr o = JLiterObject::instance();
   if( (v.at(0) != '"') && (v1.at(0) != '"') )
@@ -142,18 +124,12 @@ JObjectPtr JObject::operator-(JObjectPtr o1)
   } else {
     throw CalculatorException();
   }
-  return std::static_pointer_cast<JObject>(o);
+  return o;
 }
 
-JObjectPtr JObject::operator/(JObjectPtr o1)
+JLiterObjectPtr JLiterObject::operator/(JLiterObjectPtr l1)
 {
-  JLiterObjectPtr l1 = std::dynamic_pointer_cast<JLiterObject>(o1);
-  JObjectPtr self = this->share();
-  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(self);
-  if(! ( l1.get() && l.get() ) )
-  {
-    throw CalculatorException();
-  }
+  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(share());
   std::string v = l->value;	std::string v1 = l1->value;
   JLiterObjectPtr o = JLiterObject::instance();
   if( (v.at(0) != '"') && (v1.at(0) != '"') )
@@ -165,6 +141,6 @@ JObjectPtr JObject::operator/(JObjectPtr o1)
   } else {
     throw CalculatorException();
   }
-  return std::static_pointer_cast<JObject>(o);
+  return o;
 }
 

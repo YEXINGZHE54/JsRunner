@@ -20,10 +20,6 @@ namespace jrun{
       static JObjectPtr instance();
       JObjectPtr share();
       std::map<propertyName, propertyValue> properties;
-      JObjectPtr operator+ (JObjectPtr o1);
-      JObjectPtr operator- (JObjectPtr o1);
-      JObjectPtr operator* (JObjectPtr o1);
-      JObjectPtr operator/ (JObjectPtr o1);
       bool isTrue();
       virtual void dummy();
     };
@@ -41,7 +37,11 @@ namespace jrun{
     class JLiterObject; typedef std::shared_ptr<JLiterObject> JLiterObjectPtr;
     class JLiterObject : public JObject{
     public:
-      static JLiterObjectPtr instance();  
+      static JLiterObjectPtr instance();
+      JLiterObjectPtr operator+ (JLiterObjectPtr o1);
+      JLiterObjectPtr operator- (JLiterObjectPtr o1);
+      JLiterObjectPtr operator* (JLiterObjectPtr o1);
+      JLiterObjectPtr operator/ (JLiterObjectPtr o1);
       std::string value;
     };
     extern JObjectPtr nullObject;

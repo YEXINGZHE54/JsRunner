@@ -5,6 +5,7 @@ set(vmSRCS
   vmachine.cc
   JRunContext.cc
   closure.cc
+  calculator.cc
 )
 
 add_library(vmachine ${vmSRCS})

@@ -69,7 +69,10 @@ namespace jrun {
       //to avoid circulation between dOpvalue and rightValue, by '('
       wrapRightVRule = ( '(' >> rightVRule[_val = qi::_1] >> ')' ) || tVRule[_val = qi::_1];
       wrapRightVRule.name("wrappedRightValue");
-      dOpRule %= wrapRightVRule >> ( ascii::char_('+')|ascii::char_('-')|ascii::char_('*')|ascii::char_('/') ) >> ( rightVRule | '(' >> rightVRule >> ')' ); 
+      dOpRule = wrapRightVRule[at_c<0>(_val) = qi::_1] 
+		>> ( ascii::char_('+')|ascii::char_('-')|ascii::char_('*')|ascii::char_('/') )[at_c<1>(_val) = qi::_1]
+		>> ( (rightVRule[at_c<2>(_val) = qi::_1] >> qi::attr(false)[at_c<3>(_val) = qi::_1] ) 
+		    | ( '(' >> rightVRule[at_c<2>(_val) = qi::_1] >> ')' >> qi::attr(true)[at_c<3>(_val) = qi::_1] ) ); 
       dOpRule.name("dOp");
       sOpRule %= tVRule >> (ascii::string("++")|ascii::string("--"));
       sOpRule.name("sOp");

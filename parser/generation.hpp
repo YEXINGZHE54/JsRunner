@@ -40,10 +40,10 @@ namespace jrun{
      leftValue, literValue 
     > tValue;
     typedef boost::variant<
-      tValue, rightValue
+      rightValue, tValue
     > wrappedRightValue;
     struct dOpValue { //exclude =
-      wrappedRightValue first;  std::string op;	rightValue second;
+      wrappedRightValue first;	std::string op;	rightValue second;	bool grouped;
     };
     struct sOpValue {
       tValue first; std::string op;

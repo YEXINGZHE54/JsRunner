@@ -92,7 +92,8 @@ JObjectPtr right_command_visitor::operator()(const jrun::generation::AnnoFunc& a
 JObjectPtr right_command_visitor::operator()(const jrun::generation::dOpValue& dOp) const
 {
 #ifdef DEBUG
-  jrun::log::Logger::log(jrun::log::level::INFO, std::string("running a dOp command in right visitor") );
+  std::string grouped = dOp.grouped ? "grouped" : "not grouped";
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string("running a dOp command in right visitor, ") + grouped );
 #endif
   return Operation::exec(contexts, dOp);
 }

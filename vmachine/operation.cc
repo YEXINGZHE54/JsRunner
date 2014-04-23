@@ -10,6 +10,7 @@
 #include "log/logger.hpp"
 #include "vmachine/tag.hpp"
 #include "vmachine/closure.hpp"
+#include "vmachine/calculator.hpp"
 
 using namespace jrun::vmachine;
 
@@ -127,23 +128,7 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("dOpValue in operation"));
 #endif
   assert(!cxts.empty());
-
-  JObjectPtr v1 = boost::apply_visitor(expr_command_visitor(cxts), dOp.first);
-  JObjectPtr v2 = boost::apply_visitor(right_command_visitor(cxts), dOp.second);
-  assert(!dOp.op.empty());
-  char c = dOp.op.at(0);
-  switch(c){
-    case '+':
-      return v1->operator+(v2); break;
-    case '-':
-      return v1->operator-(v2); break;
-    case '*':
-      return v1->operator*(v2); break;
-    case '/':
-      return v1->operator/(v2); break;
-    default:
-      return nullObject; break;
-  };
+  return calculate(cxts, dOp);
 }
 
 JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& , const jrun::generation::sOpValue& )
