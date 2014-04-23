@@ -3,7 +3,7 @@
 #include "vmachine.hpp"
 #include <boost/variant/apply_visitor.hpp>
 #include "vmachine/operation.hpp"
-#include "vmachine/visitor.hpp"
+#include "evaluate/visitor.hpp"
 #include "vmachine/exception.hpp"
 #include "vmachine/JObject.hpp"
 #include "log/logger.hpp"

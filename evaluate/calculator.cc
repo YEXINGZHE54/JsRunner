@@ -1,5 +1,5 @@
-#include <vmachine/calculator.hpp>
-#include <vmachine/visitor.hpp>
+#include "calculator.hpp"
+#include "evaluate/visitor.hpp"
 #include <map>
 #include <string>
 #include <functional>

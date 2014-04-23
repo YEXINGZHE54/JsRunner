@@ -1,6 +1,6 @@
 #include "vmachine/operation.hpp"
 #include "assert.h"
-#include "vmachine/visitor.hpp"
+#include "evaluate/visitor.hpp"
 #include <boost/variant/apply_visitor.hpp>
 #include "vmachine/exception.hpp"
 #include "vmachine/JRunContext.hpp"
@@ -10,11 +10,11 @@
 #include "log/logger.hpp"
 #include "vmachine/tag.hpp"
 #include "vmachine/closure.hpp"
-#include "vmachine/calculator.hpp"
+#include "evaluate/calculator.hpp"
 
 using namespace jrun::vmachine;
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::NamedFunc& f)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::NamedFunc& f)
 {
 #ifdef DEBUG
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("defining function in operation  ") + f.name);
@@ -46,13 +46,13 @@ out:
   return nullObject;
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::retCommand& ret)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::retCommand& ret)
 {
   JObjectPtr ptr = boost::apply_visitor(right_command_visitor(cxts), ret.exr);
   throw ReturnKit(ptr);		//we use throw try-catch to jump out of deep stackFrames, maybe it is the only way to do it
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::ifCommand& r)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::ifCommand& r)
 {
 #ifdef DEBUG
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("if command blocks in operation  ") );
@@ -67,7 +67,7 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   return result;
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::Assign& ass)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::Assign& ass)
 {
 #ifdef DEBUG
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("assign key value in operation") );
@@ -92,7 +92,7 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   return v;
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::AnnoFunc& f)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::AnnoFunc& f)
 {
 #ifdef DEBUG
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("AnnoFunc in operation"));
@@ -122,7 +122,7 @@ out:
   return std::static_pointer_cast<JObject>(fun);
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::dOpValue& dOp)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::dOpValue& dOp)
 {
 #ifdef DEBUG
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("dOpValue in operation"));
@@ -131,7 +131,7 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   return calculate(cxts, dOp);
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& , const jrun::generation::sOpValue& )
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& , const jrun::generation::sOpValue& )
 {
 #ifdef DEBUG
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("sOp in operation"));
@@ -140,7 +140,7 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& , const jrun::ge
   return nullObject;
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::Objectdef& obj)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::Objectdef& obj)
 {
 #ifdef DEBUG
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("objectDef in operation"));
@@ -158,7 +158,7 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   return o;
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::funCall& f)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::funCall& f)
 {
 #ifdef DEBUG
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("FuncCall in operation"));
@@ -200,7 +200,7 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   return re;
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::literValue& v)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::literValue& v)
 {
 #ifdef DEBUG
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("literValue in operation") + v);
@@ -211,7 +211,7 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   return std::static_pointer_cast<JObject>(o);
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::names& names)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::names& names)
 {
   assert(!cxts.empty());
   JObjectPtr result = nullObject;
@@ -249,14 +249,14 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   return result;
 }
 
-JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::mapKey& map)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::mapKey& map)
 {
   jrun::generation::leftValue lvalue(map);
   return exec(cxts, boost::apply_visitor(leftname_visitor(), lvalue));
   //return nullObject;
 }
 
-JObjectPtr Operation::exec(const std::vector< jrun::vmachine::JRunContextPtr>& cxts, const jrun::generation::mapConst& map)
+JObjectPtr jrun::vmachine::Operation::exec(const std::vector< jrun::vmachine::JRunContextPtr>& cxts, const jrun::generation::mapConst& map)
 {
   jrun::generation::leftValue lvalue(map);
   return exec(cxts, boost::apply_visitor(leftname_visitor(), lvalue));
