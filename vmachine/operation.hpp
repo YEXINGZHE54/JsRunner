@@ -25,6 +25,8 @@ namespace jrun{
       static JObjectPtr exec(std::vector<JRunContextPtr> const&, const gen::mapKey &);
       static JObjectPtr exec(std::vector<JRunContextPtr> const&, const gen::mapConst &);
       static JObjectPtr exec(std::vector<JRunContextPtr> const&, const gen::ifCommand &);
+      static JObjectPtr exec(std::vector<JRunContextPtr> const&, const gen::forCommand &);
+      static JObjectPtr exec(std::vector<JRunContextPtr> const&, const gen::whileCommand &);
     };
   }
 }

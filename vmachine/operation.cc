@@ -67,6 +67,52 @@ JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& 
   return result;
 }
 
+JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::forCommand& f)
+{
+#ifdef DEBUG
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string("for command blocks in operation  ") );
+#endif
+  for(std::vector<jrun::generation::Expr>::const_iterator it = f.start.begin(); it != f.start.end(); ++it)
+  {
+    boost::apply_visitor(expr_command_visitor(cxts), *it);
+  }
+  JObjectPtr result = nullObject;
+  JObjectPtr condition = boost::apply_visitor(expr_command_visitor(cxts), f.condition);
+  while(condition->isTrue())
+  {
+    try{
+      result = VM::runCommands(cxts, f.commands);
+    } catch (BreakKit b) {
+      return result;
+    }
+    for(std::vector<jrun::generation::Expr>::const_iterator it = f.after.begin(); it != f.after.end(); ++it)
+    {
+      boost::apply_visitor(expr_command_visitor(cxts), *it);
+    }
+    condition = boost::apply_visitor(expr_command_visitor(cxts), f.condition);
+  }
+  return result;
+}
+
+JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::whileCommand& w)
+{
+#ifdef DEBUG
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string("while command blocks in operation  ") );
+#endif
+  JObjectPtr result = nullObject;
+  JObjectPtr condition = boost::apply_visitor(expr_command_visitor(cxts), w.condition);
+  while(condition->isTrue())
+  {
+    try{
+      result = VM::runCommands(cxts, w.commands);
+    } catch (BreakKit b) {
+      return result;
+    }
+    condition = boost::apply_visitor(expr_command_visitor(cxts), w.condition);
+  }
+  return result;
+}
+
 JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::Assign& ass)
 {
 #ifdef DEBUG

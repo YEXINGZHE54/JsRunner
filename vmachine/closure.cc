@@ -25,6 +25,8 @@ namespace jrun{
       	void operator()(const gen::AnnoFunc&) const;      
       	void operator()(const gen::leftValue&) const;
       	void operator()(const gen::ifCommand&) const;
+	void operator()(const gen::forCommand&) const;
+	void operator()(const gen::whileCommand&) const;
       	void operator()(const gen::names&) const;
       	void operator()(const gen::mapKey&) const;
       	void operator()(const gen::mapConst&) const;
@@ -65,6 +67,26 @@ void closure_visitor::operator()(const jrun::generation::ifCommand& r) const
   boost::apply_visitor(closure_visitor(contexts), r.e);
   jrun::vmachine::closure_ref_test(r.commands, contexts);
   jrun::vmachine::closure_ref_test(r.elsecoms, contexts);
+}
+
+void closure_visitor::operator()(const jrun::generation::forCommand& f) const
+{
+  for(std::vector<jrun::generation::Expr>::const_iterator it = f.start.begin(); it != f.start.end(); ++it)
+  {
+    boost::apply_visitor(closure_visitor(contexts), *it);
+  }
+  boost::apply_visitor(closure_visitor(contexts), f.condition);
+  for(std::vector<jrun::generation::Expr>::const_iterator it = f.after.begin(); it != f.after.end(); ++it)
+  {
+    boost::apply_visitor(closure_visitor(contexts), *it);
+  }
+  jrun::vmachine::closure_ref_test(f.commands, contexts);
+}
+
+void closure_visitor::operator()(const jrun::generation::whileCommand& f) const
+{
+  boost::apply_visitor(closure_visitor(contexts), f.condition);
+  jrun::vmachine::closure_ref_test(f.commands, contexts);
 }
 
 void closure_visitor::operator() ( const jrun::generation::Assign& e) const

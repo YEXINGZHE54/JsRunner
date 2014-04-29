@@ -57,6 +57,22 @@ JObjectPtr command_visitor::operator()(const jrun::generation::ifCommand& r) con
   return Operation::exec(contexts, r);
 }
 
+JObjectPtr command_visitor::operator()(const jrun::generation::forCommand& f) const
+{
+#ifdef DEBUG
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string("running a FOR command in command visitor") );
+#endif
+  return Operation::exec(contexts, f);
+}
+
+JObjectPtr command_visitor::operator()(const jrun::generation::whileCommand& w) const
+{
+#ifdef DEBUG
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string("running a While command in command visitor") );
+#endif
+  return Operation::exec(contexts, w);
+}
+
 JObjectPtr expr_command_visitor::operator()(const jrun::generation::Assign& ass) const
 {
 #ifdef DEBUG

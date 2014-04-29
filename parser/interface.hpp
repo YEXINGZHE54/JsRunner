@@ -92,6 +92,20 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
+      jrun::generation::forCommand,
+      (std::vector<jrun::generation::Expr>, start)
+      (jrun::generation::Expr, condition)
+      (std::vector<jrun::generation::Expr>, after)
+      (std::vector<jrun::generation::mCommand>, commands)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+      jrun::generation::whileCommand,
+      (jrun::generation::Expr, condition)
+      (std::vector<jrun::generation::mCommand>, commands)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
   jrun::generation::AST,
   (std::vector<jrun::generation::mCommand>, commands)
 )

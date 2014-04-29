@@ -43,7 +43,9 @@ namespace jrun {
     ruleDefine(retRule, data::retCommand);
     ruleDefine(vargsRule, data::virtualArgs);	ruleDefine(rargsRule, data::RealArgs);
     ruleDefine(commandRule, data::mCommand);	ruleDefine(exprRule, data::Expr);	ruleDefine(assignRule, data::Assign);
-    ruleDefine(ifRule, data::ifCommand);
+    ruleDefine(ifRule, data::ifCommand);	ruleDefine(forRule, data::forCommand);
+    ruleDefine(zOmExprs, std::vector<data::Expr>);
+    ruleDefine(whileRule, data::whileCommand);
 #undef ruleDefine
     void report (const char * a) { std::cout << a; };
     };
@@ -108,7 +110,8 @@ namespace jrun {
       propertyAssignRule.name("property");
       retRule %= qi::lit("return") >> rightVRule ;
       retRule.name("return");
-      commandRule = NFuncRule[_val = qi::_1] || retRule[_val = qi::_1] || ifRule[_val = qi::_1] || exprRule[_val = qi::_1] ;
+      commandRule = NFuncRule[_val = qi::_1] || retRule[_val = qi::_1] || ifRule[_val = qi::_1] || 
+		    forRule[_val = qi::_1] || whileRule[_val = qi::_1] || exprRule[_val = qi::_1] ;
       commandRule.name("command");
       ifRule = qi::lit("if")
 		>> opParen >> exprRule[at_c<0>(_val) = qi::_1] >> clParen 
@@ -118,6 +121,19 @@ namespace jrun {
 		>>( (opBrace >> *(commandRule[push_back(at_c<2>(_val), qi::_1)] >> qi::lit(semicolon)) >> clBrace)
 		| ( commandRule[push_back(at_c<2>(_val), qi::_1)] ) );
 		;
+      zOmExprs = -exprRule[push_back(_val, qi::_1)] >> *(comma >> exprRule[push_back(_val, qi::_1)]);
+      forRule = qi::lit("for")
+		>> opParen >> zOmExprs[at_c<0>(_val) = qi::_1] >> semicolon >> 
+		exprRule[at_c<1>(_val) = qi::_1] >> semicolon >>
+		zOmExprs[at_c<2>(_val) = qi::_1] >> clParen
+		>>( (opBrace >> *(commandRule[push_back(at_c<3>(_val), qi::_1)] >> qi::lit(semicolon)) >> clBrace)
+		| commandRule[push_back(at_c<3>(_val), qi::_1)] );
+      whileRule = qi::lit("while")
+		>> opParen >> exprRule[at_c<0>(_val) = qi::_1] >> clParen
+		>>( (opBrace >> *(commandRule[push_back(at_c<1>(_val), qi::_1)] >> qi::lit(semicolon)) >> clBrace)
+		| commandRule[push_back(at_c<1>(_val), qi::_1)] );
+      whileRule.name("while");
+      forRule.name("forRule");
       ifRule.name("ifRule");
       start = +(commandRule[push_back(at_c<0>(_val), qi::_1)] >> qi::lit(semicolon));
       start.name("start");
@@ -129,6 +145,7 @@ namespace jrun {
       qi::debug(leftVRule);	qi::debug(mapConstRule);qi::debug(mapkeyRule);	qi::debug(nameRule);
       qi::debug(literRule);	qi::debug(symName);	qi::debug(tVRule);	qi::debug(ifRule);
       */
+      qi::debug(whileRule);
     }
   }
 }
