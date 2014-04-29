@@ -24,10 +24,83 @@ namespace jrun{
       class functorsInit{
 	public:
 	functorsInit(functorMap& map){
+	  auto comp = [](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ return l1->operator-(l2); };
 	  map["+"] = [](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ return l1->operator+(l2); };
-	  map["-"] = [](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ return l1->operator-(l2); };
+	  map["-"] = comp;
 	  map["*"] = [](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ return l1->operator*(l2); };
-	  map["/"] = [](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ return l1->operator/(l2); };
+	  map["/"] = [](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ return l1->operator/(l2); };	  
+	  auto getDouble = [](const JLiterObjectPtr result)->long double {
+	    long double d;
+	    if(!result->getDouble(d))
+	      throw CalculatorException();
+	    return d;
+	  };
+	  map[">"] = [&](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ 
+	    JLiterObjectPtr result =  comp(l1, l2); 
+	    long double d = getDouble(result);
+	    if(d > 0) result->value = "true";
+	    else result->value = "false";
+	    return result;
+	  };
+	  map["<"] = [&](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ 
+	    JLiterObjectPtr result =  comp(l1, l2); 
+	    long double d = getDouble(result);
+	    if(d < 0) result->value = "true";
+	    else result->value = "false";
+	    return result;
+	  };
+	  map["=="] = [&](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ 
+	    JLiterObjectPtr result =  comp(l1, l2); 
+	    long double d = getDouble(result);
+	    if(d == 0) result->value = "true";
+	    else result->value = "false";
+	    return result;
+	  };
+	  map["<="] = [&](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ 
+	    JLiterObjectPtr result =  comp(l1, l2); 
+	    long double d = getDouble(result);
+	    if(d <= 0) result->value = "true";
+	    else result->value = "false";
+	    return result;
+	  };
+	  map[">="] = [&](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ 
+	    JLiterObjectPtr result =  comp(l1, l2); 
+	    long double d = getDouble(result);
+	    if(d >= 0) result->value = "true";
+	    else result->value = "false";
+	    return result;
+	  };
+	  map["!="] = [&](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ 
+	    JLiterObjectPtr result =  comp(l1, l2); 
+	    long double d = getDouble(result);
+	    if(d != 0) result->value = "true";
+	    else result->value = "false";
+	    return result;
+	  };
+	  map["&&"] = [&](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ 
+	    JLiterObjectPtr result =  JLiterObject::instance();
+	    if(!l1->isTrue()) {
+	      result->value = "false";
+	      return result;
+	    }
+	    if(!l2->isTrue()) {
+	      result->value = "false";
+	      return result;
+	    }
+	    result->value = "true";	return result;
+	  };
+	  map["||"] = [&](const JLiterObjectPtr l1, const JLiterObjectPtr l2)->JLiterObjectPtr{ 
+	    JLiterObjectPtr result =  JLiterObject::instance();
+	    if(l1->isTrue()) {
+	      result->value = "true";
+	      return result;
+	    }
+	    if(l2->isTrue()) {
+	      result->value = "true";
+	      return result;
+	    }
+	    result->value = "false";	return result;
+	  };
 	}
       };
       static functorsInit fInitializer(functors);
@@ -38,8 +111,18 @@ namespace jrun{
 	priorInit(priorMap& map){
 	  map["+"] = 3;
 	  map["-"] = 3;
-	  map["*"] = 4;
-	  map["/"] = 4;	  
+	  map["*"] = 5;
+	  map["/"] = 5;	  
+	  map[">"] = 2;
+	  map["<"] = 2;
+	  map[">="] = 2;
+	  map["<="] = 2;
+	  map["=="] = 2;
+	  map["!="] = 2;
+	  map["==="] = 2;
+	  map["!=="] = 2;
+	  map["&&"] = 1;
+	  map["||"] = 1;
 	  map["start"] = 0;
 	}
       };
@@ -51,16 +134,14 @@ namespace jrun{
       public:
 	operatorsInit(operatorMap& map)
 	{
-	  JLiterObjectPtr r = JLiterObject::instance();	r->value="+";	r->properties[tag::FLAG_OPERATOR] = nullObject;
-	  map["+"] = r;
-	  r = JLiterObject::instance();	r->value="-";	r->properties[tag::FLAG_OPERATOR] = nullObject;
-	  map["-"] = r;
-	  r = JLiterObject::instance();	r->value="*";	r->properties[tag::FLAG_OPERATOR] = nullObject;
-	  map["*"] = r;
-	  r = JLiterObject::instance();	r->value="/";	r->properties[tag::FLAG_OPERATOR] = nullObject;
-	  map["/"] = r;
-	  r = JLiterObject::instance();	r->value="start";	r->properties[tag::FLAG_OPERATOR] = nullObject;
-	  map["start"] = r;
+	  std::string ops[] = {"+", "-", "*", "/", "start",
+	    "<", ">", ">=", "<=", "==", "!=", "===", "!==", "&&", "||"
+	  };
+	  int st = sizeof(ops) / sizeof(ops[0]);
+	  for(int i = 0; i < st; ++i) {
+	    JLiterObjectPtr r = JLiterObject::instance();	r->value=ops[i];	r->properties[tag::FLAG_OPERATOR] = nullObject;
+	    map[ops[i]] = r;
+	  }
 	}	
       };
       static operatorsInit oInitializer(operators);

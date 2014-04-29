@@ -144,3 +144,14 @@ JLiterObjectPtr JLiterObject::operator/(JLiterObjectPtr l1)
   return o;
 }
 
+bool JLiterObject::getDouble(long double& d)
+{
+  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(share());
+  std::string v = l->value;
+  if( v.at(0) != '"' )
+  {
+    d = std::stold(v);
+    return true;
+  }
+  return false;
+}

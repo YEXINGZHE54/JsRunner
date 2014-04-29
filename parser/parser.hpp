@@ -72,7 +72,11 @@ namespace jrun {
       wrapRightVRule = ( '(' >> rightVRule[_val = qi::_1] >> ')' ) || tVRule[_val = qi::_1];
       wrapRightVRule.name("wrappedRightValue");
       dOpRule = wrapRightVRule[at_c<0>(_val) = qi::_1] 
-		>> ( ascii::char_('+')|ascii::char_('-')|ascii::char_('*')|ascii::char_('/') )[at_c<1>(_val) = qi::_1]
+		>> ( ascii::string("+")|ascii::string("-")|ascii::string("*")|ascii::string("/") 
+		  | ascii::string("===") | ascii::string("!==")
+		  | ascii::string(">=") | ascii::string("<=") | ascii::string("==") | ascii::string("!=") | ascii::string("&&")  | ascii::string("||") 
+		  | ascii::string(">") | ascii::string("<")
+		)[at_c<1>(_val) = qi::_1]
 		>> ( (rightVRule[at_c<2>(_val) = qi::_1] >> qi::attr(false)[at_c<3>(_val) = qi::_1] ) 
 		    | ( '(' >> rightVRule[at_c<2>(_val) = qi::_1] >> ')' >> qi::attr(true)[at_c<3>(_val) = qi::_1] ) ); 
       dOpRule.name("dOp");
@@ -145,7 +149,6 @@ namespace jrun {
       qi::debug(leftVRule);	qi::debug(mapConstRule);qi::debug(mapkeyRule);	qi::debug(nameRule);
       qi::debug(literRule);	qi::debug(symName);	qi::debug(tVRule);	qi::debug(ifRule);
       */
-      qi::debug(whileRule);
     }
   }
 }

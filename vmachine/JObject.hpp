@@ -42,6 +42,7 @@ namespace jrun{
       JLiterObjectPtr operator- (JLiterObjectPtr o1);
       JLiterObjectPtr operator* (JLiterObjectPtr o1);
       JLiterObjectPtr operator/ (JLiterObjectPtr o1);
+      bool getDouble(long double&);
       std::string value;
     };
     extern JObjectPtr nullObject;
