@@ -31,6 +31,7 @@ bool jrun::wrapper::execute(const std::string& filename, callbacks& cb)
   bool r  = jrun::parser::parse(begin, end, d);
   if(cb.afterParse)
     if( !cb.afterParse(r, d) ) return false;
+  if(!r) return false;
   
   std::vector<jrun::vmachine::JRunContextPtr> cxts;
   cxts.push_back(jrun::vmachine::JRunContext::instance());
