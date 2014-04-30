@@ -25,9 +25,12 @@ namespace jrun {
     
     class leftname_visitor : public boost::static_visitor< gen::names > {
     public:
+      leftname_visitor(const std::vector<JRunContextPtr>& cxts);
       gen::names operator() (const gen::names& name) const;
       gen::names operator() (const gen::mapKey& name) const;
       gen::names operator() (const gen::mapConst& name) const;
+    private:
+      const std::vector<JRunContextPtr>& contexts;
     };
     
     class expr_command_visitor : public boost::static_visitor< JObjectPtr >{

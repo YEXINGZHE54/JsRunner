@@ -2,6 +2,7 @@
 #include <boost/variant/apply_visitor.hpp>
 #include "vmachine/operation.hpp"
 #include "log/logger.hpp"
+#include "vmachine/exception.hpp"
 
 using namespace jrun::vmachine;
 
@@ -21,6 +22,11 @@ right_command_visitor::right_command_visitor(const std::vector< JRunContextPtr >
 }
 
 left_command_visitor::left_command_visitor(const std::vector< JRunContextPtr >& cxts) : contexts(cxts)
+{
+
+}
+
+leftname_visitor::leftname_visitor(const std::vector< JRunContextPtr >& cxts) : contexts(cxts)
 {
 
 }
@@ -197,8 +203,11 @@ jrun::generation::names leftname_visitor::operator()(const jrun::generation::map
   jrun::log::Logger::log(jrun::log::level::INFO, std::string("converting mapkey to names in leftname visitor") );
 #endif
   gen::names m = name.map;
-  m.reserve(m.size() + name.key.size()); //处于效率考虑， 预先分配足够空间
-  m.insert(m.end(), name.key.begin(), name.key.end());
+  left_command_visitor c(contexts);
+  JObjectPtr key = c.operator()(name.key);
+  JLiterObjectPtr l = std::dynamic_pointer_cast<JLiterObject>(key);
+  if(!l.get()) throw UndefinedException();
+  m.push_back(l->value);
   return m;
 }
 

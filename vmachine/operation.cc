@@ -157,7 +157,7 @@ JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& 
 #endif
   assert(!cxts.empty());  
   JObjectPtr v = boost::apply_visitor(right_command_visitor(cxts), ass.value);
-  gen::names k = boost::apply_visitor(leftname_visitor(), ass.key);
+  gen::names k = boost::apply_visitor(leftname_visitor(cxts), ass.key);
   
   assert(!k.empty());
   std::string name = k.back(); k.pop_back();
@@ -348,12 +348,11 @@ JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& 
 JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::mapKey& map)
 {
   jrun::generation::leftValue lvalue(map);
-  return exec(cxts, boost::apply_visitor(leftname_visitor(), lvalue));
-  //return nullObject;
+  return exec(cxts, boost::apply_visitor(leftname_visitor(cxts), lvalue));
 }
 
 JObjectPtr jrun::vmachine::Operation::exec(const std::vector< jrun::vmachine::JRunContextPtr>& cxts, const jrun::generation::mapConst& map)
 {
   jrun::generation::leftValue lvalue(map);
-  return exec(cxts, boost::apply_visitor(leftname_visitor(), lvalue));
+  return exec(cxts, boost::apply_visitor(leftname_visitor(cxts), lvalue));
 }
