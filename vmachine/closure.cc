@@ -27,6 +27,7 @@ namespace jrun{
       	void operator()(const gen::ifCommand&) const;
 	void operator()(const gen::forCommand&) const;
 	void operator()(const gen::whileCommand&) const;
+	void operator()(const gen::breakCommand&) const;
       	void operator()(const gen::names&) const;
       	void operator()(const gen::mapKey&) const;
       	void operator()(const gen::mapConst&) const;
@@ -87,6 +88,11 @@ void closure_visitor::operator()(const jrun::generation::whileCommand& f) const
 {
   boost::apply_visitor(closure_visitor(contexts), f.condition);
   jrun::vmachine::closure_ref_test(f.commands, contexts);
+}
+
+void closure_visitor::operator()(const jrun::generation::breakCommand&) const
+{
+
 }
 
 void closure_visitor::operator() ( const jrun::generation::Assign& e) const

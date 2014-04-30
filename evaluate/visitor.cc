@@ -73,6 +73,14 @@ JObjectPtr command_visitor::operator()(const jrun::generation::whileCommand& w) 
   return Operation::exec(contexts, w);
 }
 
+JObjectPtr command_visitor::operator()(const jrun::generation::breakCommand& b) const
+{
+#ifdef DEBUG
+  jrun::log::Logger::log(jrun::log::level::INFO, std::string("running a Break command in command visitor") );
+#endif
+  return Operation::exec(contexts, b);
+}
+
 JObjectPtr expr_command_visitor::operator()(const jrun::generation::Assign& ass) const
 {
 #ifdef DEBUG

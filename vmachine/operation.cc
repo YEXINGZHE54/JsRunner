@@ -145,6 +145,11 @@ JObjectPtr Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun
   return result;
 }
 
+JObjectPtr Operation::exec(const std::vector< JRunContextPtr >&, const jrun::generation::breakCommand&)
+{
+  throw BreakKit();
+}
+
 JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::Assign& ass)
 {
 #ifdef DEBUG

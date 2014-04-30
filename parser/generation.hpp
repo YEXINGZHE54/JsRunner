@@ -67,10 +67,11 @@ namespace jrun{
       rightValue exr;
     };
     
-    struct ifCommand;	struct forCommand; struct whileCommand;
+    struct ifCommand;	struct forCommand; struct whileCommand;	struct breakCommand;
     typedef boost::variant<
       boost::recursive_wrapper<NamedFunc>, retCommand, boost::recursive_wrapper<ifCommand>, 
-      boost::recursive_wrapper<forCommand>, boost::recursive_wrapper<whileCommand>, Expr
+      boost::recursive_wrapper<forCommand>, boost::recursive_wrapper<whileCommand>, 
+      breakCommand, Expr
     > mCommand;
     struct propertyAssign {
       std::string key;
@@ -101,6 +102,9 @@ namespace jrun{
     struct whileCommand {
       Expr condition;
       std::vector<mCommand> commands;
+    };
+    struct breakCommand {
+      bool notUsed;
     };
     
     struct AST {

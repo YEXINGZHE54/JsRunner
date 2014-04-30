@@ -45,7 +45,7 @@ namespace jrun {
     ruleDefine(commandRule, data::mCommand);	ruleDefine(exprRule, data::Expr);	ruleDefine(assignRule, data::Assign);
     ruleDefine(ifRule, data::ifCommand);	ruleDefine(forRule, data::forCommand);
     ruleDefine(zOmExprs, std::vector<data::Expr>);
-    ruleDefine(whileRule, data::whileCommand);
+    ruleDefine(whileRule, data::whileCommand);	ruleDefine(breakRule, data::breakCommand);
 #undef ruleDefine
     void report (const char * a) { std::cout << a; };
     };
@@ -115,7 +115,7 @@ namespace jrun {
       retRule %= qi::lit("return") >> rightVRule ;
       retRule.name("return");
       commandRule = NFuncRule[_val = qi::_1] || retRule[_val = qi::_1] || ifRule[_val = qi::_1] || 
-		    forRule[_val = qi::_1] || whileRule[_val = qi::_1] || exprRule[_val = qi::_1] ;
+		    forRule[_val = qi::_1] || whileRule[_val = qi::_1] || breakRule[_val = qi::_1] || exprRule[_val = qi::_1] ;
       commandRule.name("command");
       ifRule = qi::lit("if")
 		>> opParen >> exprRule[at_c<0>(_val) = qi::_1] >> clParen 
@@ -139,6 +139,7 @@ namespace jrun {
       whileRule.name("while");
       forRule.name("forRule");
       ifRule.name("ifRule");
+      breakRule = qi::lit("break") >> qi::attr(true);
       start = +(commandRule[push_back(at_c<0>(_val), qi::_1)] >> qi::lit(semicolon));
       start.name("start");
       /*
