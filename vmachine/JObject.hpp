@@ -26,12 +26,13 @@ namespace jrun{
     
     class Operation;	class JFunObject;
     typedef std::shared_ptr<JFunObject> JFunObjectPtr;
+    typedef std::function<JObjectPtr(const std::vector<JRunContextPtr> &, const std::vector<JObjectPtr> &)> JFunctor;
     class JFunObject : public JObject{
     public:
       static JFunObjectPtr instance();   
       std::vector<JRunContextPtr> contexts;	//继承自 函数生成时 的执行环境链条， 执行时需要再加入一个context
-      std::vector<std::string> args;
-      std::vector<jrun::generation::mCommand> operations;
+      std::size_t args;
+      JFunctor operations;
     };
     
     class JLiterObject; typedef std::shared_ptr<JLiterObject> JLiterObjectPtr;

@@ -12,7 +12,7 @@ namespace jrun{
     class VM{
     public:
       VM();
-      static void execute(std::shared_ptr<gen::AST> commands);
+      static JObjectPtr execute(const std::vector<JRunContextPtr> &cxts, std::shared_ptr<gen::AST> commands);
       static JObjectPtr runCommands(const std::vector<JRunContextPtr>& scopeChain, const std::vector<gen::mCommand>& commands);
     };
     

@@ -10,7 +10,6 @@ namespace ascii = boost::spirit::ascii;
       mXml_grammer< Iter > mGrammar;
 
       bool r = qi::phrase_parse(begin, end, mGrammar, boost::spirit::ascii::space, *mPtr);
-      if(r) std::cout << "partial matched!" << std::endl;
 
       if(begin != end) return false;
       return r;

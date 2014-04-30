@@ -24,9 +24,41 @@ JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& 
   JFunObjectPtr fun = JFunObject::instance();
   cur->properties[f.name] = std::static_pointer_cast<JObject>(fun); //在 定义环境 中添加函数对象，便于递归
   
-  fun->args = f.argsv;
-  fun->operations = f.commands;
+  fun->args = f.argsv.size();  
   fun->contexts = cxts;
+  
+  auto func = [f](const std::vector<JRunContextPtr> &scopeChain, const std::vector<JObjectPtr> &args)->JObjectPtr
+  {        
+    //now prepare for function to run
+    std::size_t n = args.size();
+    JRunContextPtr c = JRunContext::instance();
+    for(std::size_t i = 0; i < n; ++i)
+    {
+      JObjectPtr v = args.at(i);
+      std::string k = f.argsv.at(i);
+      c->properties[k] = v;
+    };
+  
+    //link cxts
+    std::vector<JRunContextPtr> newScopeChain = scopeChain;  
+    newScopeChain.push_back(c);
+    
+    JObjectPtr re;
+    try {    
+      re = VM::runCommands(newScopeChain, f.commands);
+    } catch (ReturnKit r) {
+      re = r.result;
+    }
+    
+    //closure deal
+    for(jrun::vmachine::JRunContext::mapIterator it = c->properties.begin(); it != c->properties.end(); ++it)
+    {
+      if( !( it->second->properties.count(jrun::vmachine::tag::REF_CLOSURE) > 0 ) )	//没有被闭包所引用
+	c->properties.erase(it);	//清除所有当前变量
+    }    
+    return re;
+  };
+  fun->operations = func;
   
   // check for posssible closure references
   if(cxts.size() == 1) goto out;		//if in global envrionment, no check
@@ -39,7 +71,7 @@ JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& 
   {
     c->properties[f.argsv.at(i)] = nullObject;
   }
-  contexts.push_back(c);			//AnnoFunc has args, so need to init current environments
+  contexts.push_back(c);			//Func has args, so need to init current environments
   jrun::vmachine::closure_ref_test(f.commands, contexts);
   }
 out:  
@@ -146,9 +178,41 @@ JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& 
   assert(!cxts.empty());
   JFunObjectPtr fun = JFunObject::instance();
 
-  fun->args = f.argsv;
-  fun->operations = f.commands;
+  fun->args = f.argsv.size();
   fun->contexts = cxts;
+  
+  auto func = [f](const std::vector<JRunContextPtr> &scopeChain, const std::vector<JObjectPtr> &args)->JObjectPtr
+  {        
+    //now prepare for function to run
+    std::size_t n = args.size();
+    JRunContextPtr c = JRunContext::instance();
+    for(std::size_t i = 0; i < n; ++i)
+    {
+      JObjectPtr v = args.at(i);
+      std::string k = f.argsv.at(i);
+      c->properties[k] = v;
+    };
+  
+    //link cxts
+    std::vector<JRunContextPtr> newScopeChain = scopeChain;  
+    newScopeChain.push_back(c);
+    
+    JObjectPtr re;
+    try {    
+      re = VM::runCommands(newScopeChain, f.commands);
+    } catch (ReturnKit r) {
+      re = r.result;
+    }
+    
+    //closure deal
+    for(jrun::vmachine::JRunContext::mapIterator it = c->properties.begin(); it != c->properties.end(); ++it)
+    {
+      if( !( it->second->properties.count(jrun::vmachine::tag::REF_CLOSURE) > 0 ) )	//没有被闭包所引用
+	c->properties.erase(it);	//清除所有当前变量
+    }    
+    return re;
+  };
+  fun->operations = func;
   
   // check for posssible closure references
   if(cxts.size() == 1) goto out;
@@ -212,38 +276,19 @@ JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& 
   assert(!cxts.empty());
   JFunObjectPtr fun = std::dynamic_pointer_cast<JFunObject>( boost::apply_visitor(left_command_visitor(cxts), f.name) );
   if( !(fun.get()) ) throw funNotfoundException();	//cannot convirt to function
-  if(fun->args.size() != f.args.size()) throw funArgException();
+  if(fun->args != f.args.size()) throw funArgException();  
   
-  //now prepare for function to run
-  std::size_t n = fun->args.size();
-  JRunContextPtr cur = JRunContext::instance();
+  //push args in vector
+  std::size_t n = fun->args;
+  std::vector<JObjectPtr> args;
   for(std::size_t i = 0; i < n; i++)
   {
     JObjectPtr v = boost::apply_visitor(right_command_visitor(cxts), f.args.at(i));
-    std::string k = fun->args.at(i);
-    cur->properties[k] = v;
+    args.push_back(v);
   };
   
-  //link cxts
-  std::vector<JRunContextPtr> scopeChain = fun->contexts;  
-  scopeChain.push_back(cur);
-  
   //run it!
-  JObjectPtr re = nullObject;
-  try {
-    VM::runCommands(scopeChain, fun->operations);
-  } catch (ReturnKit r) {
-    re = r.result;
-  }
-  
-  //closure deal
-  for(jrun::vmachine::JRunContext::mapIterator it = cur->properties.begin(); it != cur->properties.end(); ++it)
-  {
-    if( !( it->second->properties.count(jrun::vmachine::tag::REF_CLOSURE) > 0 ) )	//没有被闭包所引用
-      cur->properties.erase(it);	//清除所有当前变量
-  }
-  
-  return re;
+  return fun->operations(fun->contexts, args);
 }
 
 JObjectPtr jrun::vmachine::Operation::exec(const std::vector< JRunContextPtr >& cxts, const jrun::generation::literValue& v)

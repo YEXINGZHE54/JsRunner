@@ -10,10 +10,8 @@
 
 using namespace jrun::vmachine;
 
-void VM::execute(std::shared_ptr< jrun::generation::AST > commands)
+JObjectPtr VM::execute(const std::vector<JRunContextPtr> &cxts, std::shared_ptr< jrun::generation::AST > commands)
 {
-  std::vector<JRunContextPtr> cxts;
-  cxts.push_back( JObject::instance() );
   JObjectPtr r = nullObject;
   try{
     r = runCommands(cxts, commands->commands);
@@ -28,18 +26,8 @@ void VM::execute(std::shared_ptr< jrun::generation::AST > commands)
   {
     cur->properties.erase(it);	//清除所有当前变量
   }
-  
-  if(r == nullObject ) return;
-  try{
-    JLiterObjectPtr re = std::dynamic_pointer_cast<JLiterObject>(r);
-    if(re.get())
-      std::cout << "final value is : " << re->value << std::endl;
-    else
-      std::cerr << "not an Literal value!" << std::endl;
-    return;
-  } catch (std::exception& e) {
-    std::cerr << e.what() << std::endl;
-  };
+
+  return r;
 };
 
 JObjectPtr VM::runCommands(const std::vector< JRunContextPtr >& scopeChain, const std::vector< jrun::generation::mCommand >& commands)
